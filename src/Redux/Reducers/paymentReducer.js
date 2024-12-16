@@ -14,13 +14,16 @@ import {
   POST_PAYMENT_FAILURE,
   POST_PAYMENT_PENDING,
   POST_PAYMENT_SUCCESS,
-} from "../Actions/PaymentActions/paymentActions";
+  POST_PAY_ORDER,
+  POST_PAY_FAILURE,
+} from '../Actions/PaymentActions/paymentActions';
 
 const initialState = {
   adminPayment: [],
   driverPayment: [],
   allPayments: [],
   payment: [],
+  orderPayLoading: false,
   paymentLoading: false,
   error: null,
 };
@@ -38,6 +41,11 @@ export const paymentReducer = (state = initialState, action) => {
         paymentLoading: false,
         error: null,
       };
+
+    case POST_PAY_ORDER:
+      return { ...state, orderPayLoading: true };
+    case POST_PAY_FAILURE:
+      return { ...state, orderPayLoading: false };
 
     case GET_DRIVER_PAY_HISTORY_PENDING:
       return { ...state, paymentLoading: true, error: null };

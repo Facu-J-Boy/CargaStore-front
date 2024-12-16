@@ -30,6 +30,7 @@ import { changeOrderState } from '../Redux/Actions/OrderActions/changeOrderState
 // import { Colors } from '../Utils/Colors';
 import { finishOrder } from '../Redux/Actions/OrderActions/finishOrder';
 import { postChat } from '../Redux/Actions/ChatActions/chatActions';
+import { payOrder } from '../Redux/Actions/PaymentActions/paymentActions';
 
 const GreenCircle = () => {
   return (
@@ -61,6 +62,8 @@ const CargaPage = () => {
       dispatch(clearOrderDetail());
     };
   }, [dispatch, id]);
+
+  const { orderPayLoading } = useSelector((state) => state.payment);
 
   const {
     singleOrder,
@@ -134,6 +137,12 @@ const CargaPage = () => {
 
   const handleFinishOrder = () => {
     dispatch(finishOrder(id, user?.driver?.id));
+  };
+
+  const handlePayOrder = () => {
+    dispatch(
+      payOrder(singleOrder?.package?.offered_price, singleOrder?.id)
+    );
   };
 
   const urlBack = import.meta.env.VITE_URL_BACKEND;
@@ -254,7 +263,17 @@ const CargaPage = () => {
                 <Typography fontSize="16px" fontWeight={600}>
                   Valor ofertado:{' '}
                   <span style={{ fontWeight: '400' }}>
-                    {`$${singleOrder?.package.offered_price}`}
+                    {`$${
+                      user.role === 'driver'
+                        ? new Intl.NumberFormat('de-DE').format(
+                            (singleOrder?.package.offered_price *
+                              90) /
+                              100
+                          )
+                        : new Intl.NumberFormat('de-DE').format(
+                            singleOrder?.package.offered_price
+                          )
+                    }`}
                   </span>
                 </Typography>
                 <Typography fontSize="40px" fontWeight={600} mb={3}>
@@ -655,6 +674,46 @@ const CargaPage = () => {
                       />
                     </Box>
                   </Grid>
+                )}
+              {user.role === 'customer' &&
+                singleOrder?.status === 'finalizado' &&
+                singleOrder?.paid && (
+                  <p
+                    style={{
+                      color: '#007C52',
+                      fontFamily: 'Montserrat',
+                      fontSize: '16px',
+                      fontWeight: 500,
+                      lineHeight: '23.2px',
+                      textAlign: 'left',
+                      margin: '10px 0px',
+                    }}
+                  >
+                    {'Envío pagado'}
+                  </p>
+                )}
+              {user.role === 'customer' &&
+                singleOrder?.status === 'finalizado' &&
+                !singleOrder?.paid && (
+                  <Stack
+                    direction="row"
+                    justifyContent={'center'}
+                    mt={3}
+                    gap={5}
+                  >
+                    <Button
+                      disabled={orderPayLoading}
+                      variant="outlined"
+                      sx={{
+                        fontWeight: 600,
+                        width: '150px',
+                        height: '40px',
+                      }}
+                      onClick={handlePayOrder}
+                    >
+                      {orderPayLoading ? 'cargando' : ' Pagar envío'}
+                    </Button>
+                  </Stack>
                 )}
               {singleOrder?.status !== 'pendiente' && orderState && (
                 <Grid item xs={6}>
